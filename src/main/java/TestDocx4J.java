@@ -33,14 +33,15 @@ public class TestDocx4J {
         PythonInterpreter pythonInterpreter = new PythonInterpreter();
         pythonInterpreter.execfile("translate.py");
 
-        File doc = new File("bir_nimala.docx");
+        File doc = new File("Reja.docx");
+//        File doc = new File("bir_nimala.docx");
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
                 .load(doc);
         MainDocumentPart mainDocumentPart = wordMLPackage
                 .getMainDocumentPart();
         String textNodesXPath = "//w:t";
         List<Object> textNodes= mainDocumentPart
-                .getJAXBNodesViaXPath(textNodesXPath, true);
+                .getJAXBNodesViaXPath(textNodesXPath, false);
         String xml = mainDocumentPart.getXML();
         for (Object obj : textNodes) {
             Text text = (Text) ((JAXBElement) obj).getValue();
@@ -48,15 +49,16 @@ public class TestDocx4J {
                 continue;
             }
             try {
-                xml = xml.replace(text.getValue(), replacer(pythonInterpreter, text.getValue()));
+                String temp = replacer(pythonInterpreter, text.getValue());
+                temp = "<w:t>"+temp+"</w:t>";
+                xml = xml.replace("<w:t>"+text.getValue()+"</w:t>", temp);
             } catch (Exception e) {
                 System.out.println(text.getValue());
             }
-
         }
         System.out.println(xml);
-//        mainDocumentPart.setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(xml));
-//        wordMLPackage.save(new File("Result.docx"));
+        mainDocumentPart.setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(xml));
+        wordMLPackage.save(new File("Result.docx"));
 
     }
 }
